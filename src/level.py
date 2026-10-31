@@ -134,6 +134,38 @@ class Level:
                 result.append(self.apply_move(direction))
         return result
 
+    def has_stuck_boxes(self):
+        non_goal_boxes = []
+        for y in range(self.num_rows):
+            for x in range(self.num_cols):
+                if self.layout[y][x] == 'b':
+                    non_goal_boxes.append((x, y))
+
+        for box in non_goal_boxes:
+            box_x, box_y = box
+            unstuck_directions = []
+            for _, direction in DIRECTIONS.items():
+                direction_x, direction_y = direction
+
+                if not all([0 <= box_x + direction_x < self.num_cols,
+                    0 <= box_x - direction_x < self.num_cols,
+                    0 <= box_y + direction_y < self.num_rows,
+                    0 <= box_y - direction_y < self.num_rows]):
+                    continue
+
+                box_target_tile_content = \
+                    self.layout[box_y + direction_y][box_x + direction_x]
+                box_player_tile_content = \
+                    self.layout[box_y - direction_y][box_x - direction_x]
+
+                if 'W' not in [box_target_tile_content, box_player_tile_content]:
+                    unstuck_directions.append(direction)
+
+            if len(unstuck_directions) == 0:
+                return True
+
+        return False
+
     def __str__(self):
         result = ''
         for row in self.layout:
