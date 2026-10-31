@@ -4,3 +4,4 @@ python3 -m pip install -r test_requirements.txt
 PYTHONPATH=. pytest tests/*
 deactivate
 rm -rf ./.venv
+fd -I -t d __pycache__ | xargs rm -rf

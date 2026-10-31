@@ -123,6 +123,9 @@ class Level:
 
         return Level(new_layout)
 
+    def check_win_condition(self):
+        return not 'G' in set([col for row in self.layout for col in row])
+
     def __str__(self):
         result = ''
         for row in self.layout:
