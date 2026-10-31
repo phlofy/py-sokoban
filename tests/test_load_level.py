@@ -5,11 +5,11 @@ from src.level import level_from_text, level_from_file
 LEVEL_STRING = """
 ..WWWWW.
 WWW...W.
-WGPB..W.
-WWW.BGW.
-WGWWB.W.
+WGpb..W.
+WWW.bGW.
+WGWWb.W.
 W.W.G.WW
-WB.BBBGW
+Wb.BbbGW
 W...G..W
 WWWWWWWW
 """

@@ -86,7 +86,7 @@ class Level:
 
     def apply_move(self, direction):
         if not self.check_valid_move(direction):
-            return Level(self.layout.copy())
+            return Level([row.copy() for row in self.layout])
 
         player_x, player_y = self.player_location()
         direction_x, direction_y = direction
@@ -94,7 +94,7 @@ class Level:
         target_tile_content = \
             self.layout[player_y + direction_y][player_x + direction_x]
 
-        new_layout = self.layout.copy()
+        new_layout = [row.copy() for row in self.layout]
 
         if target_tile_content.lower() == 'b': # A box move
             player_tile_content = \
@@ -124,7 +124,15 @@ class Level:
         return Level(new_layout)
 
     def check_win_condition(self):
-        return not 'G' in set([col for row in self.layout for col in row])
+        unique_tiles = set([col for row in self.layout for col in row])
+        return 'G' not in unique_tiles and 'P' not in unique_tiles
+
+    def get_valid_moves(self):
+        result = []
+        for _, direction in DIRECTIONS.items():
+            if self.check_valid_move(direction):
+                result.append(self.apply_move(direction))
+        return result
 
     def __str__(self):
         result = ''
