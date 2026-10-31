@@ -5,6 +5,20 @@ DIRECTIONS = {
     'LEFT': (-1, 0),
     'RIGHT': (1, 0),
 }
+DIRECT_MOVE_TRANSITIONS = {
+    'p': '.',
+    'P': 'G',
+    '.': 'p',
+    'G': 'P',
+}
+BOX_MOVE_TRANSITIONS = {
+    'p': '.',
+    'P': 'G',
+    'b': 'p',
+    'B': 'P',
+    '.': 'b',
+    'G': 'B',
+}
 
 class Level:
     """
@@ -20,6 +34,20 @@ class Level:
 
     """
     def __init__(self, layout):
+        if type(layout) is not list:
+            raise Exception(f'Expected layout to be a list, got {layout} instead')
+        if len(layout) > 0:
+            if type(layout[0]) is not list:
+                raise Exception(f'Expected layout to be a list of lists, got {layout} instead')
+
+            types_and_lengths_match = []
+            for row in layout:
+                if len(row) > 0:
+                    for col in row:
+                        types_and_lengths_match.append(type(col) is str and len(col) == 1)
+            if not all(types_and_lengths_match):
+                raise Exception(f'Expected layout to be a list of lists of chars, got {layout} instead')
+
         self.layout = layout # TODO: Validate map data
         self.num_rows = len(self.layout)
         self.num_cols = len(self.layout[0]) # Board is rectangular
@@ -56,6 +84,44 @@ class Level:
         else: # A wall
             return False
 
+    def apply_move(self, direction):
+        if not self.check_valid_move(direction):
+            return Level(self.layout.copy())
+
+        player_x, player_y = self.player_location()
+        direction_x, direction_y = direction
+
+        target_tile_content = \
+            self.layout[player_y + direction_y][player_x + direction_x]
+
+        new_layout = self.layout.copy()
+
+        if target_tile_content.lower() == 'b': # A box move
+            player_tile_content = \
+                new_layout[player_y][player_x]
+            box_tile_content = \
+                new_layout[player_y + direction_y][player_x + direction_x]
+            box_target_tile_content = \
+                new_layout[player_y + 2*direction_y][player_x + 2*direction_x]
+
+            new_layout[player_y][player_x] = \
+                BOX_MOVE_TRANSITIONS[player_tile_content]
+            new_layout[player_y + direction_y][player_x + direction_x] = \
+                BOX_MOVE_TRANSITIONS[box_tile_content]
+            new_layout[player_y + 2*direction_y][player_x + 2*direction_x] = \
+                BOX_MOVE_TRANSITIONS[box_target_tile_content]
+        else: # A direct move
+            player_tile_content = \
+                new_layout[player_y][player_x]
+            target_tile_content = \
+                new_layout[player_y + direction_y][player_x + direction_x]
+
+            new_layout[player_y][player_x] = \
+                DIRECT_MOVE_TRANSITIONS[player_tile_content]
+            new_layout[player_y + direction_y][player_x + direction_x] = \
+                DIRECT_MOVE_TRANSITIONS[target_tile_content]
+
+        return Level(new_layout)
 
     def __str__(self):
         result = ''
@@ -71,7 +137,11 @@ class Level:
 
 
 def level_from_text(string):
-    return Level(list(string.strip().split('\n')))
+    layout = []
+    for row in string.strip().split('\n'):
+        layout.append(list(row))
+
+    return Level(layout)
 
 def level_from_file(path):
     level = None
